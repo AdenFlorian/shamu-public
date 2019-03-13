@@ -1,0 +1,123 @@
+# Now
+- [ ] hook up note-scanner with everything
+	- [√] change sequencer state to whole new stuff
+	- [√] respect sequencer isPlaying
+	- [√] get sampler to support scheduled notes
+	- [√] prevent multiple oscillators/voices on same instrument from playing same note at same time, including releasing
+	- [√] make option for displaying note scheduler visual debug thing
+		- [√] make option
+		- places to toggle:
+			- [√] synth view tsx
+			- [√] in the visual tsx file
+	- [ ] get stuff working again
+		- [√] keyboard
+			- [√] computer keyboard
+			- [√] mouse
+				- this is a bit tricky
+				- need logic in local middleware, but that logic is currently only for local user
+			- [√] midi keyboard
+			- [√] check performance
+		- [√] make note-scanner use note length from event
+		- [ ] stopping a specific sequencer should immediately cancel scheduled notes from that sequencer
+		- [ ] handle conflicting note lengths scenarios
+			- scenario A
+				- steps
+					- 2 sequencers going to same synth
+					- 1 note in each, same note, same start, but different length
+				- expected
+					- only the shorter note should be played, every time (ableton way)
+			- scenario B
+				- 2 sequencers going to same synth
+				- seq A [== ===  ]
+				- seq B [==== == ]
+				- exp   [== = =  ] (ableton)
+				- act   varies
+		- [ ] sequencer animations
+		- [ ] master clock play button animation
+		- [√] infinite seq loop length
+		- [x] rate knob on infinite sequencer
+			- removed for now, not sure how to implement
+		- [√] release all notes on stop
+		- [√] stopping song shouldn't release notes being played by user
+		- what does ableton do when you stop and there is a note with a really long release
+			- it just keeps on releasing, even when you hit play again
+			- but you can adjust release of note that are already releasing, in serum at least
+		- [√] get noise osc on synth working with schedules
+		- [√] make instrument params affect currently playing notes
+			- [√] pan
+			- [√] filter
+			- [x] attack
+				- chrome bug preventing impl
+				- how?
+				- cancelAndHold?
+				- how to know when to adjust?
+				- [ ] applyEnvelope function
+			- [x] release
+				- chrome bug preventing impl
+			- [√] detune
+			- [√] osc type
+				- [√] normal
+				- [√] noise
+	- [√] animate active connections in the direction that data is flowing
+
+	- **Bugs**
+		- [ ] 2019-03-10 Not getting stuck when playing keyboard really fast with mouse
+			- haven't been able to reproduce
+		- [ ] 2019-03-03 Note getting stuck on when just sequencers are playing at normal speed
+			- put all 4 sequencers into same synth, with default release
+		- [ ] 2019-03-03 When playing note on keyboard and change connection, note keeps playing on previous instrument
+			- need to somehow stop those notes
+			- maybe need a sourceId for each event/note?
+		- [√] 2019-03-03 note getting stuck on when switching synth osc types
+			- no scheduled voice for it in debug visual
+				- maybe audio node is undefined when it shouldnt be?
+				- then when it tries to stop it, its ignoring it because its undefined
+				- how to debug this tho
+				- not sure how to repro
+				- i think its specific to switching to and from noise osc type
+				- can get stuck on noise or other type
+				- where are the spots in the code that this could happen
+				- the voice is getting released, but .stop() isn't getting called on the source node
+				- audioNode is never null, but the issue is still happening
+					- meaning, there is both an osc and noise buffer at same time
+						- but that should never happen
+				- how am i still hearing sound if the gain was disconnected?
+					- maybe it wasn't?
+				- there is still a scheduledVoice, because i can change the osc type
+					- how?
+						- onEnded wasn't called?
+						- onEnded wont be called if audioNode never stops
+						- maybe its from switching osc type during release
+						- [√] make sure audioNode is stopped when switching synth osc type between noise and other
+						- should probably just clean up how the synth voice handles noise vs other types
+
+# Soon
+- [√] put limits on virtual keyboard octave
+- [√] add gain knob on instruments
+- [ ] make an ECS system for real time stuff
+	- real time loop that reads redux state, or some other state, and renders stuff to canvases and what not
+	- have a component for rendering to a canvas, one for DOM, text, audio even, etc.
+- [ ] play note when placed in grid sequencer
+- [ ] don't change current notes on keyboard when changing octave (at least not by default; something to put in options?)
+	- not sure if possible/easy to make this an option
+- [ ] allow adding connections from a node with no connections on it already
+	- [ ] split up ConnectionView
+		- [ ] Connector component
+		- [ ] ConnectionLine component
+- [ ] fix old view
+- [ ] add ability to add nodes
+- [ ] new graph state
+	- [√] move reducers for the different node types under the shamu graph reducer, but keep them separate
+	- [ ] update positions calculations to update positions in new graph state
+		- keeping positions state where it is for now, the important thing is the actual node types
+	- [ ] change all the old multi things to use new graph state
+		- [ ] change selectors to grab from new graph state
+
+# Later
+- [ ] look into using an algorithmic reverb
+	- https://itnext.io/algorithmic-reverb-and-web-audio-api-e1ccec94621a
+- [ ] tone.js (on hold, not needed so far)
+	- [√] master volume
+	- [ ] synth
+	- [ ] sampler
+	- [ ] sequencer data structures
